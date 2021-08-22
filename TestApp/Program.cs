@@ -15,7 +15,7 @@ class Program
 
     static int deploymentUnderService = 5;
 
-    static int httpTimeOut = 1500;
+    static int httpTimeOut = 1000;
 
     static int inspectTimeout = 20000;
 
@@ -80,7 +80,7 @@ class Program
                 {
                     taskList.Add(CheckSingleInstanceEndpoints(i));
                 }
-                await waitTime();
+                await Task.Delay(60 * 1000 / batchNumber);
             }
             await Task.WhenAll(taskList);
 
@@ -99,10 +99,7 @@ class Program
 
     private async static Task waitTime()
     {
-        await Task.Run(() =>
-        { 
-            Thread.Sleep(60*1000/batchNumber);
-        });
+          await Task.Delay(60*1000/batchNumber);
     }
 
     private async static Task dummy(String s)
