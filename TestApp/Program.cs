@@ -11,15 +11,15 @@ class Program
 
     static Boolean scatter = false;
 
-    static int totalService = 100;
+    static int totalService = 312;
+
+    static int batchNumber = 6;
 
     static int deploymentUnderService = 5;
 
     static int httpTimeOut = 1000;
 
     static int inspectTimeout = 20000;
-
-    static int batchNumber = 4;
 
     static int timeOutNumber = 0;
     static async Task Main(string[] args)
@@ -73,14 +73,18 @@ class Program
         await dummy("sql Query");
         if (scatter)
         {
-            for (int j = 0; j < batchNumber; j++)
+            var stopwatch1 = Stopwatch.StartNew();
+            for (int j = 0; j <= batchNumber; j++)
             {
+                Console.WriteLine("batch " + j + " inputed for task");
                 int numberUnderBatch = totalService / batchNumber;
-                for (int i = j * numberUnderBatch; i < (j + 1) * numberUnderBatch; i++)
+                for (int i = j * numberUnderBatch; i < (j + 1) * numberUnderBatch&&i<totalService; i++)
                 {
                     taskList.Add(CheckSingleInstanceEndpoints(i));
                 }
-                await Task.Delay(60 * 1000 / batchNumber);
+                //left the last piece have double time
+                await Task.Delay(60 * 1000 / (batchNumber+2));
+                Console.WriteLine("delay for  " + stopwatch1.Elapsed+ " seconds");
             }
             await Task.WhenAll(taskList);
 
@@ -88,7 +92,7 @@ class Program
         }
         else
         {
-            for (int i = 0; i < 99; i++)
+            for (int i = 0; i < totalService; i++)
             {
                 taskList.Add(CheckSingleInstanceEndpoints(i));
             }
@@ -114,7 +118,10 @@ class Program
 
     private async static Task<List<Task>> CheckSingleInstanceEndpoints(int i)
     {
-        await Task.Delay(random.Next(5000));
+        if (!scatter)
+        {
+            await Task.Delay(random.Next(15000));
+        }
         //Console.WriteLine("Start CheckSingleInstanceEndpoints:" + i);
        List <Task> taskList = new List<Task>();
         await dummy("init check "+i);
@@ -128,10 +135,12 @@ class Program
         return taskList;
     }
 
-    private async static Task CheckDeployment(String 
-        i)
+    private async static Task CheckDeployment(String i)
     {
-        await Task.Delay(random.Next(5000));
+        if (!scatter)
+        {
+            await Task.Delay(random.Next(5000));
+        }
         //Console.WriteLine("Start CheckDeployment:" + i);
         var stopwatch = Stopwatch.StartNew();
         await httpRequest("http1:"+i, httpConnection());
