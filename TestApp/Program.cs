@@ -15,6 +15,10 @@ class Program
 
     static int deploymentUnderService = 5;
 
+    static int httpTimeOut = 1500;
+
+    static int inspectTimeout = 20000;
+
     static int batchNumber = 4;
 
     static int timeOutNumber = 0;
@@ -42,7 +46,7 @@ class Program
         var stopwatch1 = Stopwatch.StartNew();
         var task = ProduceAppAvailabilityService_exec();
         await Task.WhenAll(task);
-        Console.WriteLine($" No Scatter total cost: {stopwatch1.Elapsed}"+",timeOutNumber:"+timeOutNumber);
+        Console.WriteLine($"No Scatter total cost: {stopwatch1.Elapsed}"+",timeOutNumber:"+timeOutNumber);
 
         Console.WriteLine("Start with batch,totalService=" + totalService +",batchNumber="+ batchNumber);
         scatter = true;
@@ -117,7 +121,7 @@ class Program
         //Console.WriteLine("Start CheckSingleInstanceEndpoints:" + i);
        List <Task> taskList = new List<Task>();
         await dummy("init check "+i);
-        for (int j = 0; j < 5; j++)
+        for (int j = 0; j < deploymentUnderService; j++)
         {
             taskList.Add(CheckDeployment("Service:"+i+" Deployment: "+j));
         }
@@ -144,7 +148,7 @@ class Program
     {
         // Console.WriteLine(v);
         var stopwatch = Stopwatch.StartNew();
-        var task = await Task.WhenAny(connection, Task.Delay(20000));
+        var task = await Task.WhenAny(connection, Task.Delay(inspectTimeout));
       //  Console.WriteLine(v + $" http cost: {stopwatch.Elapsed}");
          if (task != connection)
          {
@@ -157,7 +161,7 @@ class Program
 
     private async static Task httpConnection()
     {
-        await Task.Run(() => Thread.Sleep(2000));
+        await Task.Run(() => Thread.Sleep(httpTimeOut));
         
     }
 
